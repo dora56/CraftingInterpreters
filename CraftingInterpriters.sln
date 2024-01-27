@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lox", "Lox\Lox.csproj", "{D8B514CC-FF22-457E-B348-3B0B9BBDD7E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D8B514CC-FF22-457E-B348-3B0B9BBDD7E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8B514CC-FF22-457E-B348-3B0B9BBDD7E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8B514CC-FF22-457E-B348-3B0B9BBDD7E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8B514CC-FF22-457E-B348-3B0B9BBDD7E0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
