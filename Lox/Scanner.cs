@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.RegularExpressions;
 
 namespace Lox;
@@ -90,10 +91,34 @@ public class Scanner(string source)
             case '\r':
             case '\t':
                 break;
+            case '"': String();
+                break;
             default:
                 Lox.Error(_line, "Unexpected character.");
                 break;
         }
+    }
+    
+    private void String()
+    {
+        while (Peek() != '"' && !IsAtEnd())
+        {
+            if (Peek() == '\n')
+            {
+                _line++;
+            }
+            Advance();
+        }
+
+        if (IsAtEnd())
+        {
+            Lox.Error(_line, "Unterminated string.");
+        }
+
+        Advance();
+        
+        var value = source.Substring(_start + 1, _current - _start - 2);
+        AddToken(TokenType.STRING, value);
     }
 
     private char Peek()
