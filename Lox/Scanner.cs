@@ -1,11 +1,8 @@
-using System.Runtime.InteropServices.JavaScript;
-using System.Text.RegularExpressions;
-
 namespace Lox;
 
 public class Scanner(string source)
 {
-    private List<Token> _tokens = new();
+    private readonly List<Token> _tokens = new();
     private int _start = 0;
     private int _current = 0;
     private int _line = 1;
