@@ -91,9 +91,44 @@ public class Scanner(string source)
             case '"': String();
                 break;
             default:
-                Lox.Error(_line, "Unexpected character.");
+                if (IsDigit(c))
+                {
+                    Number();
+                } else
+                {
+                    Lox.Error(_line, "Unexpected character.");
+                }
                 break;
         }
+    }
+    
+    private bool IsDigit(char c)
+    {
+        return c >= '0' && c <= '9';
+    }
+
+    private void Number()
+    {
+        while (IsDigit(Peek())) Advance();
+
+        if (Peek() == '.' && IsDigit(PeekNext()))
+        {
+            Advance();
+
+            while (IsDigit(Peek())) Advance();
+        }
+        
+        AddToken(TokenType.NUMBER, double.Parse(source.Substring(_start, _current - _start)));
+    }
+    
+    private char PeekNext()
+    {
+        if (_current + 1 >= source.Length)
+        {
+            return '\0';
+        }
+
+        return source[_current + 1];
     }
     
     private void String()
