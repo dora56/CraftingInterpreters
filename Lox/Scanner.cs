@@ -11,7 +11,7 @@ public class Scanner(string source)
     {
         return _current >= source.Length;
     }
-    
+
     public List<Token> ScanTokens()
     {
         while (!IsAtEnd())
@@ -33,7 +33,7 @@ public class Scanner(string source)
             case '(':
                 AddToken(TokenType.LEFT_PAREN);
                 break;
-            case')':
+            case ')':
                 AddToken(TokenType.RIGHT_PAREN);
                 break;
             case '{':
@@ -75,33 +75,90 @@ public class Scanner(string source)
             case '/':
                 if (Match('/'))
                 {
-                    while (Peek() != '\n' &&!IsAtEnd())
+                    while (Peek() != '\n' && !IsAtEnd())
                     {
                         Advance();
                     }
-                } else
+                }
+                else
                 {
                     AddToken(TokenType.SLASH);
                 }
+
                 break;
             case ' ':
             case '\r':
             case '\t':
                 break;
-            case '"': String();
+            case '"':
+                String();
+                break;
+            case 'o':
+                if (Match('r'))
+                {
+                    AddToken(TokenType.OR);
+                }
+
                 break;
             default:
                 if (IsDigit(c))
                 {
                     Number();
-                } else
+                }
+                else if (IsAlpha(c))
+                {
+                    Identifier();
+                }
+                else
                 {
                     Lox.Error(_line, "Unexpected character.");
                 }
+
                 break;
         }
     }
-    
+
+    private static Dictionary<string, TokenType> keywords = new()
+    {
+        { "and", TokenType.AND },
+        { "class", TokenType.CLASS},
+        { "else", TokenType.ELSE},
+        { "false", TokenType.FALSE},
+        { "for", TokenType.FOR },
+        { "fun", TokenType.FUN},
+        { "if", TokenType.IF },
+        { "nil", TokenType.NIL},
+        { "or", TokenType.OR},
+        { "print", TokenType.PRINT},
+        { "return", TokenType.RETURN},
+        { "super", TokenType.SUPER},
+        { "this", TokenType.THIS},
+        { "true", TokenType.TRUE},
+        { "var", TokenType.VAR},
+        { "while", TokenType.WHILE}
+    };
+
+
+    private void Identifier()
+    {
+        while (IsAlphaNumeric(Peek())) Advance();
+        
+        var text = source.Substring(_start, _current - _start);
+        var type = keywords.GetValueOrDefault(text, TokenType.IDENTIFIER);
+        AddToken(type);
+    }
+
+    private bool IsAlpha(char c)
+    {
+        return (c >= 'a' && c <= 'z') ||
+               (c >= 'A' && c <= 'Z') ||
+                c == '_';
+    }
+
+    private bool IsAlphaNumeric(char c)
+    {
+        return IsAlpha(c) || IsDigit(c);
+    }
     private bool IsDigit(char c)
     {
         return c >= '0' && c <= '9';
