@@ -2,22 +2,22 @@ using System.Text;
 
 namespace Lox;
 
-public class Lox
+public static class Lox
 {
     public static void Main(string[] args)
     {
-        if (args.Length > 1)
+        switch (args.Length)
         {
-            Console.WriteLine("Usage: dotnet run [script]");
-            Environment.Exit(64);
-        }
-        else if (args.Length == 1)
-        {
-            RunFile(args[0]);
-        }
-        else
-        {
-            RunPrompt();
+            case > 1:
+                Console.WriteLine("Usage: dotnet run [script]");
+                Environment.Exit(64);
+                break;
+            case 1:
+                RunFile(args[0]);
+                break;
+            default:
+                RunPrompt();
+                break;
         }
     }
     
@@ -54,7 +54,7 @@ public class Lox
         tokens.ToList().ForEach(Console.WriteLine);
     }
 
-    private static bool HadError { get; set; } = false;
+    private static bool HadError { get; set; }
     
     public static void Error(int line, string message)
     {

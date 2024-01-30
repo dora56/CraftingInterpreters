@@ -3,8 +3,8 @@ namespace Lox;
 public class Scanner(string source)
 {
     private readonly List<Token> _tokens = new();
-    private int _start = 0;
-    private int _current = 0;
+    private int _start;
+    private int _current;
     private int _line = 1;
 
     private bool IsAtEnd()
@@ -118,7 +118,7 @@ public class Scanner(string source)
         }
     }
 
-    private static Dictionary<string, TokenType> keywords = new()
+    private static readonly Dictionary<string, TokenType> Keywords = new()
     {
         { "and", TokenType.AND },
         { "class", TokenType.CLASS},
@@ -144,15 +144,13 @@ public class Scanner(string source)
         while (IsAlphaNumeric(Peek())) Advance();
         
         var text = source.Substring(_start, _current - _start);
-        var type = keywords.GetValueOrDefault(text, TokenType.IDENTIFIER);
+        var type = Keywords.GetValueOrDefault(text, TokenType.IDENTIFIER);
         AddToken(type);
     }
 
     private bool IsAlpha(char c)
     {
-        return (c >= 'a' && c <= 'z') ||
-               (c >= 'A' && c <= 'Z') ||
-                c == '_';
+        return c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or '_';
     }
 
     private bool IsAlphaNumeric(char c)
@@ -161,7 +159,7 @@ public class Scanner(string source)
     }
     private bool IsDigit(char c)
     {
-        return c >= '0' && c <= '9';
+        return c is >= '0' and <= '9';
     }
 
     private void Number()
@@ -202,6 +200,7 @@ public class Scanner(string source)
         if (IsAtEnd())
         {
             Lox.Error(_line, "Unterminated string.");
+            return;
         }
 
         Advance();
@@ -233,13 +232,8 @@ public class Scanner(string source)
     {
         return source[_current++];
     }
-    
-    private void AddToken(TokenType type)
-    {
-        AddToken(type, null);
-    }
-    
-    private void AddToken(TokenType type, Object? literal)
+
+    private void AddToken(TokenType type, object? literal = null)
     {
         var text = source.Substring(_start, _current);
         _tokens.Add(new Token(type, text, literal, _line));
