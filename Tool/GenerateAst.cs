@@ -2,7 +2,7 @@
 
 namespace Tool;
 
-public class GenerateAst
+public static class GenerateAst
 {
     public static void Main(string[] args)
     {
@@ -16,14 +16,14 @@ public class GenerateAst
             outputDir,
             "Expr",
             [
-                "Binary   : Expr left, Token oprator, Expr right",
-                "Grouping : Expr expression",
-                "Literal  : Object value",
-                "Unary    : Token operator, Expr right"
+                "Binary   : Expr Left, Token Operator, Expr Right",
+                "Grouping : Expr Expression",
+                "Literal  : Object Value",
+                "Unary    : Token operator, Expr Right"
             ]);
     }
 
-    public static void DefineAst(
+    private static void DefineAst(
         string outputDir,
         string baseName,
         IEnumerable<string> types)
@@ -45,7 +45,7 @@ public class GenerateAst
     }
 
     private static void DefineType(
-        StreamWriter writer,
+        TextWriter writer,
         string baseName,
         string className,
         string fieldList)
