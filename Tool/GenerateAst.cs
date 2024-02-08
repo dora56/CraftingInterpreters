@@ -19,7 +19,7 @@ public static class GenerateAst
                 "Binary   : Expr Left, Token Operator, Expr Right",
                 "Grouping : Expr Expression",
                 "Literal  : Object Value",
-                "Unary    : Token operator, Expr Right"
+                "Unary    : Token Operator, Expr Right"
             ]);
     }
 
@@ -32,16 +32,39 @@ public static class GenerateAst
         using var writer = new StreamWriter(path, false);
         writer.WriteLine("namespace Lox;");
         writer.WriteLine();
+        writer.WriteLine("using System;");
+        writer.WriteLine("using System.Collections.Generic;");
+        writer.WriteLine();
         writer.WriteLine($"public abstract class {baseName}");
         writer.WriteLine("{");
+        
+        DefineVisitor(writer, baseName, types);
+        
+        // AST classes
         types.ToList().ForEach(type =>
         {
             var className = type.Split(":")[0].Trim();
             var fields = type.Split(":")[1].Trim();
             DefineType(writer, baseName, className, fields);
         });
+        
+        // The base accept() method
+        writer.WriteLine();
+        writer.WriteLine("    public abstract T Accept<T>(IVisitor<T> visitor);");
         writer.WriteLine("}");
 
+    }
+
+    private static void DefineVisitor(StreamWriter writer, string baseName, IEnumerable<string> types)
+    {
+        writer.WriteLine("    public interface IVisitor<T>");
+        writer.WriteLine("    {");
+        types.ToList().ForEach(type =>
+        {
+            var typeName = type.Split(":")[0].Trim();
+            writer.WriteLine($"        T Visit{typeName}{baseName}({typeName} {baseName.ToLower()});");
+        });
+        writer.WriteLine("    }");
     }
 
     private static void DefineType(
@@ -52,28 +75,32 @@ public static class GenerateAst
     {
         writer.WriteLine("    public class " + className + " : " + baseName);
         writer.WriteLine("    {");
-        writer.WriteLine("        public " + className + "(" + fieldList + ")");
         
+        // Constructor
+        writer.WriteLine("        public " + className + "(" + fieldList + ")");
+        writer.WriteLine("        {");
+        // Store parameters in fields
         var fields = fieldList.Split(", ").ToList();
         fields.ForEach(field =>
         {
             var name = field.Split(" ")[1];
-            writer.WriteLine("            " + field + ")");
+            writer.WriteLine("            " + name + " = " + name + ";");
         });
         
         writer.WriteLine("        }");
         
-        fields.ForEach(field =>
-        {
-            var name = field.Split(" ")[1];
-            writer.WriteLine("        public " + field + " { get; }");
-        });
+        // Visitor pattern
+        writer.WriteLine();
+        writer.WriteLine("        public override T Accept<T>(IVisitor<T> visitor)");
+        writer.WriteLine("        {");
+        writer.WriteLine($"            return visitor.Visit{className}{baseName}(this);");
+        writer.WriteLine("        }");
         
-        writer.WriteLine("    }");
-        
+        // fields
         writer.WriteLine();
         fields.ForEach(field =>
             writer.WriteLine($"        public {field} {{ get; internal set; }}"));
+        
         writer.WriteLine("    }");
     }
 }
