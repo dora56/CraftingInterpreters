@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Lox;
@@ -49,9 +50,16 @@ public static class Lox
     private static void Run(String source)
     {
         var scanner = new Scanner(source);
-        IList<Token> tokens = scanner.ScanTokens();
+        var tokens = scanner.ScanTokens();
+        var parser = new Parser(tokens);
+        var expression = parser.Parse();
+        
+        if (HadError)
+        {
+            return;
+        }
    
-        tokens.ToList().ForEach(Console.WriteLine);
+        Console.WriteLine(new AstPrinter().Print(expression));
     }
 
     private static bool HadError { get; set; }
@@ -59,6 +67,19 @@ public static class Lox
     public static void Error(int line, string message)
     {
         Report(line, "", message);
+    }
+
+    public static void Error(Token token, string message)
+    {
+        // if (token.Type == TokenType.EOF)
+        // {
+        //     Report(token.Line, " at end", message);
+        // }
+        // else
+        // {
+        //     Report(token.Line, " at '" + token.Lexeme + "'", message);
+        // }
+        Report(token.Line, " at '" + token.Lexeme + "'", message);
     }
 
     private static void Report(int line, string where, string message)

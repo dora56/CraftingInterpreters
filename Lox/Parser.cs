@@ -1,13 +1,21 @@
 namespace Lox;
 
-public class Parser
+public class Parser(IReadOnlyList<Token> tokens)
 {
-    private readonly List<Token> _tokens;
-    private int _current = 0;
-    
-    public Parser(List<Token> tokens)
+    public sealed class ParseException : Exception;
+
+    private int _current;
+
+    public Expr? Parse()
     {
-        _tokens = tokens;
+        try
+        {
+            return Expression();
+        }
+        catch (ParseException error)
+        {
+            return null;
+        }
     }
     
     private Expr Expression()
@@ -31,16 +39,10 @@ public class Parser
 
     private bool Match(params TokenType[] types)
     {
-        foreach (var type in types)
-        {
-            if (Check(type))
-            {
-                Advance();
-                return true;
-            }
-        }
+        if (!Array.Exists(types, Check)) return false;
+        Advance();
+        return true;
 
-        return false;
     }
 
     private bool Check(TokenType type)
@@ -49,15 +51,15 @@ public class Parser
         return Peek().Type == type;
     }
 
-    private Token Advance()
+    private void Advance()
     {
         if(!IsAtEnd()) _current++;
-        return Previous();
+        Previous();
     }
 
     private Token Previous()
     {
-        return _tokens[_current - 1];
+        return tokens[_current - 1];
     }
 
     private bool IsAtEnd()
@@ -67,7 +69,7 @@ public class Parser
     
     private Token Peek()
     {
-        return _tokens[_current];
+        return tokens[_current];
     }
     
     private Expr Comparison()
@@ -100,13 +102,10 @@ public class Parser
     private Expr Factor()
     {
         var expr = Unary();
-        if (Match(TokenType.SLASH, TokenType.STAR))
-        {
-            var @operator = Previous();
-            var right = Unary();
-            return new Expr.Binary(expr, @operator, right);
-        }
-        return expr;
+        if (!Match(TokenType.SLASH, TokenType.STAR)) return expr;
+        var @operator = Previous();
+        var right = Unary();
+        return new Expr.Binary(expr, @operator, right);
     }
 
     private Expr Unary()
@@ -128,7 +127,7 @@ public class Parser
 
         if (Match(TokenType.NUMBER, TokenType.STRING))
         {
-            return new Expr.Literal(Previous().Literal);
+            return new Expr.Literal(Previous().Literal!);
         }
 
         if (Match(TokenType.LEFT_PAREN))
@@ -137,22 +136,42 @@ public class Parser
             Consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
+        throw Error(Peek(), "Expect expression.");
     }
     
-    private Token Consume(TokenType type, string message)
+    private void Consume(TokenType type, string message)
     {
-        if (Check(type)) return Advance();
-        throw Error(Peek(), message);
+        if (!Check(type)) throw Error(Peek(), message);
+        Advance();
     }
 
-    private ParseError Error(Token token, string message)
+    private ParseException Error(Token token, string message)
     {
         Lox.Error(token, message);
-        return new ParseError();
+        return new ParseException();
     }
 
-    private class ParseError : Exception
+    private void Synchronize()
     {
-        
+        Advance();
+        while (!IsAtEnd())
+        {
+            if (Previous().Type == TokenType.SEMICOLON) return;
+            switch (Peek().Type)
+            {
+                case TokenType.CLASS
+                    or TokenType.FOR
+                    or TokenType.FUN 
+                    or TokenType.IF
+                    or TokenType.PRINT
+                    or TokenType.RETURN
+                    or TokenType.VAR
+                    or TokenType.WHILE:
+                    return;
+            }
+
+            Advance();
+        }
     }
+    
 }
