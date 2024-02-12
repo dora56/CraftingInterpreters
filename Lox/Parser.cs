@@ -138,4 +138,21 @@ public class Parser
             return new Expr.Grouping(expr);
         }
     }
+    
+    private Token Consume(TokenType type, string message)
+    {
+        if (Check(type)) return Advance();
+        throw Error(Peek(), message);
+    }
+
+    private ParseError Error(Token token, string message)
+    {
+        Lox.Error(token, message);
+        return new ParseError();
+    }
+
+    private class ParseError : Exception
+    {
+        
+    }
 }
